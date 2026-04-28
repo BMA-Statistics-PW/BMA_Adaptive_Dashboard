@@ -5,131 +5,586 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BMA Adaptive Signaling: Pilot Project (Apr 2026)</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Sarabun', sans-serif; background-color: #f8fafc; color: #1e293b; }
-        .card { background: white; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); padding: 1.5rem; transition: transform 0.2s; }
-        .card:hover { transform: translateY(-2px); }
-        .gradient-text { background: linear-gradient(90deg, #2563eb, #14b8a6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        :root {
+            --bg: #eef4f2;
+            --surface: rgba(255, 255, 255, 0.9);
+            --surface-strong: #ffffff;
+            --text: #17313a;
+            --muted: #5f7680;
+            --line: rgba(23, 49, 58, 0.08);
+            --blue: #2f6fed;
+            --green: #0e9f6e;
+            --orange: #e79627;
+            --accent: linear-gradient(135deg, #17313a 0%, #2f6fed 52%, #2bb8a5 100%);
+            --shadow: 0 18px 45px rgba(23, 49, 58, 0.12);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Sarabun', sans-serif;
+            background:
+                radial-gradient(circle at top left, rgba(47, 111, 237, 0.12), transparent 34%),
+                radial-gradient(circle at top right, rgba(43, 184, 165, 0.14), transparent 28%),
+                linear-gradient(180deg, #f6fbfa 0%, var(--bg) 100%);
+            color: var(--text);
+        }
+
+        .shell {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 28px 20px 40px;
+        }
+
+        .hero {
+            display: grid;
+            grid-template-columns: minmax(0, 1.4fr) minmax(300px, 0.9fr);
+            gap: 20px;
+            align-items: end;
+            margin-bottom: 28px;
+        }
+
+        .hero-copy {
+            padding: 28px;
+            border-radius: 26px;
+            background: var(--accent);
+            color: #f8fdff;
+            box-shadow: var(--shadow);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero-copy::after {
+            content: "";
+            position: absolute;
+            inset: auto -70px -70px auto;
+            width: 220px;
+            height: 220px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.12);
+        }
+
+        .eyebrow {
+            margin: 0 0 12px;
+            font-size: 0.84rem;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            opacity: 0.88;
+        }
+
+        h1 {
+            margin: 0;
+            font-size: clamp(2rem, 4vw, 3.35rem);
+            line-height: 1;
+        }
+
+        .hero-copy p {
+            margin: 14px 0 0;
+            max-width: 62ch;
+            color: rgba(248, 253, 255, 0.84);
+        }
+
+        .hero-panel,
+        .card {
+            background: var(--surface);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.7);
+            border-radius: 24px;
+            box-shadow: var(--shadow);
+        }
+
+        .hero-panel {
+            padding: 22px;
+        }
+
+        .hero-panel label,
+        .card-label,
+        .section-label {
+            display: block;
+            font-size: 0.82rem;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--muted);
+            margin-bottom: 10px;
+        }
+
+        .hero-panel select {
+            width: 100%;
+            padding: 13px 14px;
+            border-radius: 14px;
+            border: 1px solid var(--line);
+            font: inherit;
+            background: var(--surface-strong);
+            color: var(--text);
+        }
+
+        .hero-meta {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 12px;
+            margin-top: 16px;
+        }
+
+        .hero-meta div {
+            padding: 14px;
+            border-radius: 16px;
+            background: rgba(23, 49, 58, 0.04);
+        }
+
+        .hero-meta strong {
+            display: block;
+            font-size: 1.2rem;
+            margin-top: 4px;
+        }
+
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 18px;
+            margin-bottom: 22px;
+        }
+
+        .card {
+            padding: 22px;
+        }
+
+        .kpi-card {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .kpi-card::before {
+            content: "";
+            position: absolute;
+            inset: 0 auto 0 0;
+            width: 8px;
+            border-radius: 24px 0 0 24px;
+        }
+
+        .kpi-card.weekday::before { background: var(--blue); }
+        .kpi-card.weekend::before { background: var(--green); }
+        .kpi-card.songkran::before { background: var(--orange); }
+
+        .kpi-title {
+            margin: 0;
+            padding-left: 14px;
+            font-size: 0.95rem;
+            color: var(--muted);
+        }
+
+        .kpi-value {
+            margin: 14px 0 10px;
+            padding-left: 14px;
+            font-size: clamp(2rem, 5vw, 3rem);
+            font-weight: 700;
+            line-height: 1;
+        }
+
+        .kpi-value span {
+            font-size: 1rem;
+            color: var(--muted);
+            font-weight: 500;
+        }
+
+        .kpi-meta {
+            display: grid;
+            gap: 6px;
+            padding-left: 14px;
+            font-size: 0.95rem;
+        }
+
+        .chart-card {
+            padding: 24px;
+        }
+
+        .section-head {
+            display: flex;
+            justify-content: space-between;
+            gap: 16px;
+            align-items: flex-end;
+            margin-bottom: 16px;
+        }
+
+        .section-head h2 {
+            margin: 0;
+            font-size: 1.25rem;
+        }
+
+        .section-head p {
+            margin: 8px 0 0;
+            color: var(--muted);
+        }
+
+        .chart-wrap {
+            position: relative;
+            min-height: 380px;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1.2fr 1fr;
+            gap: 18px;
+            margin-top: 18px;
+        }
+
+        .insight-list {
+            margin: 0;
+            padding-left: 20px;
+            color: var(--muted);
+        }
+
+        .insight-list li + li {
+            margin-top: 10px;
+        }
+
+        .footer {
+            margin-top: 22px;
+            text-align: center;
+            color: var(--muted);
+            font-size: 0.95rem;
+        }
+
+        .insight-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 12px;
+            margin-top: 16px;
+        }
+
+        .insight-pill {
+            padding: 14px;
+            border-radius: 16px;
+            background: rgba(23, 49, 58, 0.04);
+        }
+
+        .insight-pill strong {
+            display: block;
+            margin-top: 4px;
+            font-size: 1rem;
+            color: var(--text);
+        }
+
+        @media (max-width: 920px) {
+            .hero,
+            .info-grid,
+            .kpi-grid,
+            .insight-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .hero-meta {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        @media (max-width: 640px) {
+            .shell {
+                padding: 18px 14px 28px;
+            }
+
+            .hero-copy,
+            .hero-panel,
+            .card,
+            .chart-card {
+                border-radius: 20px;
+            }
+
+            .hero-meta {
+                grid-template-columns: 1fr;
+            }
+
+            .section-head {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+        }
     </style>
 </head>
-<body class="p-4 md:p-8">
-    <div class="max-w-7xl mx-auto">
-        <header class="mb-8 text-center md:text-left flex justify-between items-end border-b pb-4">
-            <div>
-                <h1 class="text-3xl font-bold gradient-text mb-2">BMA Adaptive Signaling Performance</h1>
-                <p class="text-gray-500">Pilot Project Analysis: 73 Junctions (1 - 21 April 2026)</p>
+<body>
+    <main class="shell">
+        <section class="hero">
+            <div class="hero-copy">
+                <p class="eyebrow">BMA Statistics and Research Group</p>
+                <h1>BMA Adaptive Signaling Performance</h1>
+                <p>สรุปผลโครงการนำร่องระบบสัญญาณไฟจราจรอัจฉริยะสำหรับ 73 ทางแยก ช่วงวันที่ 1-21 เมษายน 2026 โดยเทียบรูปแบบความหน่วงรายชั่วโมงระหว่างวันทำการ วันหยุด และช่วงสงกรานต์</p>
             </div>
-            <div class="hidden md:block text-sm text-gray-400 font-semibold">
-                © Prapawadee_W
-            </div>
-        </header>
 
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            <div class="card border-l-4 border-blue-500">
-                <h3 class="text-sm font-semibold text-gray-500 uppercase tracking-wide">Weekday Avg Delay</h3>
-                <p class="text-4xl font-bold text-gray-800 mt-2">58.18 <span class="text-lg font-medium text-gray-500">sec</span></p>
-                <div class="mt-4 flex items-center justify-between text-sm">
-                    <span class="text-blue-600 font-medium">Adaptive Active: 81.17%</span>
-                    <span class="text-gray-400">Vol: 71.7k/day</span>
+            <aside class="hero-panel">
+                <label for="junctionSelect">เลือกดูข้อมูล</label>
+                <select id="junctionSelect">
+                    <option value="ALL">ภาพรวมทั้งหมด 73 ทางแยก</option>
+                </select>
+
+                <div class="hero-meta">
+                    <div>
+                        <span class="card-label">Study Window</span>
+                        <strong id="study-window">1-21 Apr 2026</strong>
+                    </div>
+                    <div>
+                        <span class="card-label">Coverage</span>
+                        <strong id="coverage-count">73 Junctions</strong>
+                    </div>
+                </div>
+            </aside>
+        </section>
+
+        <section class="kpi-grid">
+            <article class="card kpi-card weekday">
+                <h2 class="kpi-title">Weekday Avg Delay</h2>
+                <p class="kpi-value" id="kpi-wd-delay">58.18 <span>sec</span></p>
+                <div class="kpi-meta">
+                    <span id="kpi-wd-adapt">Adaptive Active: 81.17%</span>
+                    <span id="kpi-wd-vol">Volume: 71,743.82 / day</span>
+                </div>
+            </article>
+
+            <article class="card kpi-card weekend">
+                <h2 class="kpi-title">Weekend Avg Delay</h2>
+                <p class="kpi-value" id="kpi-we-delay">47.86 <span>sec</span></p>
+                <div class="kpi-meta">
+                    <span id="kpi-we-adapt">Adaptive Active: 88.91%</span>
+                    <span id="kpi-we-vol">Volume: 72,202.50 / day</span>
+                </div>
+            </article>
+
+            <article class="card kpi-card songkran">
+                <h2 class="kpi-title">Songkran Avg Delay</h2>
+                <p class="kpi-value" id="kpi-sk-delay">41.67 <span>sec</span></p>
+                <div class="kpi-meta">
+                    <span id="kpi-sk-adapt">Adaptive Active: 90.66%</span>
+                    <span id="kpi-sk-vol">Volume: 68,612.98 / day</span>
+                </div>
+            </article>
+        </section>
+
+        <section class="card chart-card">
+            <div class="section-head">
+                <div>
+                    <span class="section-label">Hourly Trend</span>
+                    <h2 id="chart-title">Hourly Delay Trend: ภาพรวมทั้งหมด</h2>
+                    <p id="chart-subtitle">Average delay by hour for the full pilot area</p>
                 </div>
             </div>
-            <div class="card border-l-4 border-green-500">
-                <h3 class="text-sm font-semibold text-gray-500 uppercase tracking-wide">Weekend Avg Delay</h3>
-                <p class="text-4xl font-bold text-gray-800 mt-2">47.86 <span class="text-lg font-medium text-gray-500">sec</span></p>
-                <div class="mt-4 flex items-center justify-between text-sm">
-                    <span class="text-green-600 font-medium">Adaptive Active: 88.91%</span>
-                    <span class="text-gray-400">Vol: 72.2k/day</span>
-                </div>
-            </div>
-            <div class="card border-l-4 border-orange-400">
-                <h3 class="text-sm font-semibold text-gray-500 uppercase tracking-wide">Songkran Avg Delay</h3>
-                <p class="text-4xl font-bold text-gray-800 mt-2">41.67 <span class="text-lg font-medium text-gray-500">sec</span></p>
-                <div class="mt-4 flex items-center justify-between text-sm">
-                    <span class="text-orange-500 font-medium">Adaptive Active: 90.66%</span>
-                    <span class="text-gray-400">Vol: 68.6k/day</span>
-                </div>
-            </div>
-        </div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-            <div class="card">
-                <h2 class="text-lg font-semibold mb-4 text-gray-700">Hourly Delay Trend (Seconds)</h2>
-                <canvas id="delayChart" height="250"></canvas>
+            <div class="chart-wrap">
+                <canvas id="delayChart"></canvas>
             </div>
-            
-            <div class="card">
-                <h2 class="text-lg font-semibold mb-4 text-gray-700">Top 10 Most Congested Junctions</h2>
-                <canvas id="topJunctionChart" height="250"></canvas>
-            </div>
-        </div>
-    </div>
+        </section>
 
+        <section class="info-grid">
+            <article class="card">
+                <span class="section-label">Key Findings</span>
+                <ol class="insight-list">
+                    <li>วันทำการมีความหน่วงสูงสุดในช่วงเย็น โดยจุดพีคอยู่ที่ 17:00 น. ที่ 77.12 วินาที</li>
+                    <li>วันหยุดมีรูปแบบหน่วงช้ากว่าและกระจายตัวสม่ำเสมอกว่า โดยคงระดับสูงช่วงกลางวันถึงเย็น</li>
+                    <li>ช่วงสงกรานต์มีความหน่วงลดลงชัดเจน แต่ยังเห็นการสะสมของโหลดในช่วงบ่ายถึงหัวค่ำ</li>
+                </ol>
+            </article>
+
+            <article class="card">
+                <span class="section-label">Repository Note</span>
+                <p style="margin: 0; color: var(--muted); line-height: 1.65;">หน้า GitHub นี้โหลดข้อมูลจริงจากไฟล์ในรีโพโดยตรง ทั้ง CSV ที่ export จาก workbook และ payload สำหรับหน้าเว็บ ทำให้ dropdown รายทางแยกและกราฟ KPI sync กับข้อมูลต้นทางชุดเดียวกัน</p>
+                <div class="insight-grid">
+                    <div class="insight-pill">
+                        <span class="card-label">Selected Junction</span>
+                        <strong id="selected-junction">ภาพรวมทั้งหมด</strong>
+                    </div>
+                    <div class="insight-pill">
+                        <span class="card-label">Overall Rank</span>
+                        <strong id="selected-rank">Topline Summary</strong>
+                    </div>
+                    <div class="insight-pill">
+                        <span class="card-label">Avg Daily Volume</span>
+                        <strong id="selected-volume">71,743.82 / day</strong>
+                    </div>
+                </div>
+            </article>
+        </section>
+
+        <div class="footer">© Prapawadee_W | Statistics and Research Group, BMA</div>
+    </main>
+
+    <script src="data/dashboard-data.js"></script>
     <script>
-        // ข้อมูลสรุปรายชั่วโมง
+        const dashboardData = window.BMA_DASHBOARD_DATA || {};
+        const globalData = dashboardData.globalKpi || {};
+        const globalHourly = dashboardData.globalHourly || {};
+        const junctionData = dashboardData.junctions || {};
         const hours = ['00:00', '01:00', '02:00', '03:00', '04:00', '05:00', '06:00', '07:00', '08:00', '09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00', '18:00', '19:00', '20:00', '21:00', '22:00', '23:00'];
-        const delayWeekday = [25.36, 24.35, 22.17, 20.85, 19.19, 23.8, 33.06, 48.05, 55.74, 56.64, 59.07, 62.28, 64.93, 65.58, 67.2, 68.46, 67.88, 77.12, 76.53, 63.52, 51.79, 45.56, 37.99, 29.91];
-        const delayWeekend = [28.16, 25.7, 23.54, 21.5, 19.76, 21.3, 24.6, 28.5, 34.01, 42.9, 52.43, 61.44, 69.34, 70.62, 71.96, 70.9, 70.23, 70.68, 62.46, 59.72, 55.33, 50.52, 43.28, 32.8];
-        const delaySongkran = [31.2, 27.1, 24.78, 23.83, 21.32, 21.15, 22.11, 23.83, 24.73, 28.51, 34.52, 40.75, 45.39, 49.44, 55.17, 60.44, 64.65, 64.64, 63.84, 62.08, 58.98, 51.01, 43.03, 33.28];
 
-        // ข้อมูล 10 อันดับทางแยก
-        const topJunctions = ["อโศก", "พระราม 4", "พระราม 9", "วิทยุ", "ราชประสงค์", "ศาลาแดง", "อังรีดูนังต์", "เฉลิมเผ่า", "ปทุมวัน", "รามคําแหง"];
-        const topDelays = [134.23, 125.53, 123.27, 119.57, 102.42, 93.72, 86.94, 86.42, 83.89, 83.46];
-
-        // ตั้งค่าฟอนต์เริ่มต้นสำหรับ Chart.js
         Chart.defaults.font.family = "'Sarabun', sans-serif";
 
-        // สร้างกราฟเส้น (Line Chart)
-        new Chart(document.getElementById('delayChart').getContext('2d'), {
-            type: 'line',
-            data: {
-                labels: hours,
-                datasets: [
-                    { label: 'Weekday', data: delayWeekday, borderColor: '#3b82f6', backgroundColor: '#3b82f6', tension: 0.4, borderWidth: 2 },
-                    { label: 'Weekend', data: delayWeekend, borderColor: '#10b981', backgroundColor: '#10b981', tension: 0.4, borderWidth: 2 },
-                    { label: 'สงกรานต์', data: delaySongkran, borderColor: '#fba918', backgroundColor: '#fba918', tension: 0.4, borderWidth: 2, borderDash: [5, 5] }
-                ]
-            },
-            options: {
-                responsive: true,
-                interaction: { mode: 'index', intersect: false },
-                plugins: { 
-                    legend: { position: 'top', labels: { usePointStyle: true } },
-                    tooltip: { backgroundColor: 'rgba(255,255,255,0.9)', titleColor: '#000', bodyColor: '#000', borderColor: '#e2e8f0', borderWidth: 1 }
-                },
-                scales: { 
-                    y: { beginAtZero: true, grid: { borderDash: [2, 2] }, title: { display: true, text: 'Average Delay (Seconds)' } },
-                    x: { grid: { display: false } }
-                }
-            }
-        });
+        const junctionSelect = document.getElementById('junctionSelect');
+        const chartTitle = document.getElementById('chart-title');
+        const chartSubtitle = document.getElementById('chart-subtitle');
+        const studyWindow = document.getElementById('study-window');
+        const coverageCount = document.getElementById('coverage-count');
+        const selectedJunction = document.getElementById('selected-junction');
+        const selectedRank = document.getElementById('selected-rank');
+        const selectedVolume = document.getElementById('selected-volume');
+        let delayChart;
 
-        // สร้างกราฟแท่ง (Bar Chart)
-        new Chart(document.getElementById('topJunctionChart').getContext('2d'), {
-            type: 'bar',
-            data: {
-                labels: topJunctions,
-                datasets: [{
-                    label: 'Weighted Avg Delay (s)',
-                    data: topDelays,
-                    backgroundColor: 'rgba(239, 68, 68, 0.8)',
-                    borderRadius: 4,
-                    hoverBackgroundColor: 'rgba(220, 38, 38, 1)'
-                }]
-            },
-            options: {
-                responsive: true,
-                indexAxis: 'y', // ทำให้เป็นกราฟแท่งแนวนอน
-                plugins: { 
-                    legend: { display: false },
-                    tooltip: { backgroundColor: 'rgba(255,255,255,0.9)', titleColor: '#000', bodyColor: '#000', borderColor: '#e2e8f0', borderWidth: 1 }
-                },
-                scales: { 
-                    x: { beginAtZero: true, grid: { borderDash: [2, 2] }, title: { display: true, text: 'Seconds' } },
-                    y: { grid: { display: false } }
-                }
+        function initializeSummary() {
+            if (dashboardData.studyWindow) {
+                studyWindow.textContent = dashboardData.studyWindow;
             }
+
+            if (dashboardData.junctionCount) {
+                coverageCount.textContent = `${dashboardData.junctionCount} Junctions`;
+            }
+        }
+
+        function populateJunctionOptions() {
+            const names = Object.keys(junctionData).sort((left, right) => left.localeCompare(right, 'th'));
+
+            if (!names.length) {
+                return;
+            }
+
+            const optgroup = document.createElement('optgroup');
+            optgroup.label = 'ข้อมูลรายจุด (By Junction)';
+
+            names.forEach((name) => {
+                const option = document.createElement('option');
+                option.value = name;
+                option.textContent = name;
+                optgroup.appendChild(option);
+            });
+
+            junctionSelect.appendChild(optgroup);
+        }
+
+        function initChart() {
+            const ctx = document.getElementById('delayChart').getContext('2d');
+            delayChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: hours,
+                    datasets: [
+                        {
+                            label: 'Weekday',
+                            data: globalHourly.Weekday,
+                            borderColor: '#2f6fed',
+                            backgroundColor: '#2f6fed',
+                            tension: 0.35,
+                            borderWidth: 3,
+                            pointRadius: 0
+                        },
+                        {
+                            label: 'Weekend',
+                            data: globalHourly.Weekend,
+                            borderColor: '#0e9f6e',
+                            backgroundColor: '#0e9f6e',
+                            tension: 0.35,
+                            borderWidth: 3,
+                            pointRadius: 0
+                        },
+                        {
+                            label: 'สงกรานต์',
+                            data: globalHourly['สงกรานต์'],
+                            borderColor: '#e79627',
+                            backgroundColor: '#e79627',
+                            tension: 0.35,
+                            borderWidth: 3,
+                            pointRadius: 0,
+                            borderDash: [8, 6]
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: { mode: 'index', intersect: false },
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            labels: {
+                                usePointStyle: true,
+                                boxWidth: 8,
+                                padding: 18
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(255, 255, 255, 0.96)',
+                            titleColor: '#17313a',
+                            bodyColor: '#17313a',
+                            borderColor: 'rgba(23, 49, 58, 0.12)',
+                            borderWidth: 1,
+                            displayColors: true
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: { color: '#5f7680' },
+                            grid: { color: 'rgba(23, 49, 58, 0.08)' },
+                            title: { display: true, text: 'Average Delay (Seconds)' }
+                        },
+                        x: {
+                            ticks: { color: '#5f7680', maxRotation: 0, autoSkip: true },
+                            grid: { display: false }
+                        }
+                    }
+                }
+            });
+        }
+
+        function updateKpi(prefix, data) {
+            const safeData = data || {};
+            const delay = safeData.delay ?? '-';
+            const adaptive = safeData.adaptive ?? '-';
+            const volume = safeData.vol ?? '-';
+
+            document.getElementById(`${prefix}-delay`).innerHTML = `${delay} <span>sec</span>`;
+            document.getElementById(`${prefix}-adapt`).textContent = `Adaptive Active: ${adaptive}%`;
+            document.getElementById(`${prefix}-vol`).textContent = `Volume: ${volume} / day`;
+        }
+
+        function updateUI(junctionName) {
+            const isOverall = junctionName === 'ALL' || !junctionData[junctionName];
+            const dataKpi = isOverall ? globalData : junctionData[junctionName].kpi;
+            const dataHourly = isOverall ? globalHourly : junctionData[junctionName].hourly;
+            const ranking = isOverall ? null : junctionData[junctionName].ranking;
+
+            chartTitle.textContent = isOverall
+                ? 'Hourly Delay Trend: ภาพรวมทั้งหมด'
+                : `Hourly Delay Trend: ${junctionName}`;
+
+            chartSubtitle.textContent = isOverall
+                ? 'Average delay by hour for the full pilot area'
+                : `Average delay by hour for junction ${junctionName}`;
+
+            selectedJunction.textContent = isOverall ? 'ภาพรวมทั้งหมด' : junctionName;
+            selectedRank.textContent = isOverall ? 'Topline Summary' : `Rank #${junctionData[junctionName].rank}`;
+            selectedVolume.textContent = isOverall
+                ? `${dataKpi.Weekday?.vol || '-'} / day`
+                : `${ranking.avgDailyVolume} / day`;
+
+            updateKpi('kpi-wd', dataKpi.Weekday);
+            updateKpi('kpi-we', dataKpi.Weekend);
+            updateKpi('kpi-sk', dataKpi['สงกรานต์']);
+
+            delayChart.data.datasets[0].data = dataHourly.Weekday || new Array(24).fill(0);
+            delayChart.data.datasets[1].data = dataHourly.Weekend || new Array(24).fill(0);
+            delayChart.data.datasets[2].data = dataHourly['สงกรานต์'] || new Array(24).fill(0);
+            delayChart.update();
+        }
+
+        initializeSummary();
+        populateJunctionOptions();
+        initChart();
+        updateUI('ALL');
+
+        junctionSelect.addEventListener('change', (event) => {
+            updateUI(event.target.value);
         });
     </script>
 </body>
