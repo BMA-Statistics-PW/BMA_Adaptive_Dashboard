@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Adaptive Signaling Pilot Dashboard - BMA</title>
+<script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { 
+    font-family: 'Sarabun', sans-serif; 
+    background: #f8fafc; 
+    color: #334155; 
+  }
+  
+  /* ส่วนหัวกระดาษ (Header) - ปรับโทนสีกรมท่า-ฟ้า ของกทม. */
+  .header { 
+    background: linear-gradient(135deg, #1e3a8a, #3b82f6); 
+    color: white; 
+    padding: 30px 5%; 
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1); 
+    text-align: center;
+  }
+  .header h1 { 
+    font-size: clamp(22px, 3.5vw, 32px); /* ปรับขนาดอัตโนมัติ */
+    margin-bottom: 8px; 
+    font-weight: 700; 
+  }
+  .header p { 
+    opacity: 0.9; 
+    font-size: clamp(14px, 2vw, 16px); 
+  }
+
+  /* การจัด Container พื้นฐาน */
+  .container { 
+    width: 95%; 
+    max-width: 1400px; 
+    margin: 0 auto; 
+    padding: 30px 0; 
+  }
+
+  /* การจัด Layout ของ KPI Card แบบ Responsive (Mobile/Tablet/PC) */
+  .kpi-grid { 
+    display: grid; 
+    grid-template-columns: 1fr; /* Mobile: 1 คอลัมน์ */
+    gap: 16px; 
+    margin-bottom: 30px; 
+  }
+  @media (min-width: 640px) {
+    .kpi-grid { grid-template-columns: repeat(2, 1fr); } /* Tablet: 2 คอลัมน์ */
+  }
+  @media (min-width: 1024px) {
+    .kpi-grid { grid-template-columns: repeat(5, 1fr); } /* PC: 5 คอลัมน์ */
+  }
+
+  /* การออกแบบ KPI Card ภาษาทางการและใช้สีพาสเทล */
+  .kpi-card { 
+    background: white; 
+    padding: 24px 20px; 
+    border-radius: 12px; 
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04); 
+    border-left: 5px solid #89b4e3; /* สีฟ้าพาสเทลพื้นฐาน */
+    transition: transform 0.2s;
+  }
+  .kpi-card:hover { transform: translateY(-2px); }
+  .kpi-card .label { font-size: 14px; color: #64748b; font-weight: 500; margin-bottom: 8px; }
+  .kpi-card .value { font-size: 28px; font-weight: 700; color: #0f172a; }
+  .kpi-card .sub { font-size: 13px; color: #94a3b8; margin-top: 4px; }
+
+  /* ปรับแถบสีด้านซ้ายของ Card ให้เป็นโทนพาสเทลที่ดูสบายตา */
+  .kpi-card.delay { border-color: #ffb6c1; } /* สีชมพูพาสเทล */
+  .kpi-card.volume { border-color: #a2d9a6; } /* สีเขียวพาสเทล */
+  .kpi-card.adaptive { border-color: #fdfd96; } /* สีเหลืองพาสเทล */
+
+  /* ส่วน Tabs */
+  .tabs { 
+    display: flex; gap: 4px; background: white; padding: 6px; 
+    border-radius: 12px; margin-bottom: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); 
+    flex-wrap: wrap;
+  }
+  .tab { 
+    padding: 12px 24px; cursor: pointer; border-radius: 8px; 
+    font-weight: 500; transition: all 0.2s; flex: 1; text-align: center; 
+    min-width: 120px;
+  }
+  .tab.active { background: #89b4e3; color: #1e293b; }
+  .tab:not(.active):hover { background: #f1f5f9; }
+
+  /* ส่วนเนื้อหากราฟ (Panels & Charts) */
+  .panel { 
+    background: white; border-radius: 12px; padding: 24px; 
+    margin-bottom: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); 
+    overflow-x: auto;
+  }
+  .panel h2 { font-size: 18px; margin-bottom: 16px; color: #1e293b; padding-bottom: 12px; border-bottom: 2px solid #f1f5f9; }
+  
+  .charts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  @media (max-width: 968px) { .charts-grid { grid-template-columns: 1fr; } } /* ยุบรวมเป็น 1 คอลัมน์เมื่อจอเล็ก */
+
+  .hidden { display: none; }
+  
+  .controls select { 
+    padding: 10px 14px; border: 1px solid #cbd5e1; border-radius: 8px; 
+    font-size: 14px; min-width: 250px; background: white; font-family: 'Sarabun', sans-serif;
+  }
+
+  /* กล่องข้อค้นพบ (Insights) */
+  .insight-box { 
+    background: #f8fafc; border-left: 4px solid #94a3b8; 
+    padding: 16px; border-radius: 8px; margin-bottom: 20px; 
+  }
+  .insight-box h3 { font-size: 16px; color: #334155; margin-bottom: 8px; }
+  .insight-box ul { margin-left: 20px; font-size: 14px; color: #475569; line-height: 1.6; }
+
+  .footer { text-align: center; padding: 30px; color: #64748b; font-size: 14px; border-top: 1px solid #e2e8f0; margin-top: 20px;}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>Pilot การวิเคราะห์ข้อมูลจากระบบ Adaptive Signaling ของสำนักการจราจรและขนส่ง</h1>
+  <p>ข้อมูลประกอบการพิจารณา โครงการพัฒนาระบบจราจร (ข้อมูล 1–21 เมษายน)</p>
+</div>
+
+<div class="container">
+  <div class="kpi-grid">
+    <div class="kpi-card"><div class="label">จำนวนจุดสำรวจ</div><div class="value">73</div><div class="sub">ทางแยกในระบบ</div></div>
+    <div class="kpi-card volume"><div class="label">ปริมาณจราจรเฉลี่ยต่อวัน (ต่อทางแยก)</div><div class="value">71,428</div><div class="sub">คัน / วัน</div></div>
+    <div class="kpi-card delay"><div class="label">ระยะเวลาหน่วงเฉลี่ยถ่วงน้ำหนัก</div><div class="value">56.71</div><div class="sub">วินาที / คัน</div></div>
+    <div class="kpi-card adaptive"><div class="label">สัดส่วนการทำงานของระบบ Adaptive</div><div class="value">84.7%</div><div class="sub">ในภาพรวม</div></div>
+    <div class="kpi-card"><div class="label">ปริมาณข้อมูลที่นำมาวิเคราะห์</div><div class="value">36,792</div><div class="sub">รายการ (21 วัน)</div></div>
+  </div>
+
+  <div class="insight-box">
+    <h3>💡 สรุปข้อค้นพบเบื้องต้นจากการวิเคราะห์</h3>
+    <ul>
+      <li><b>วันทำการมีระยะเวลาหน่วงสูงกว่าวันหยุดประมาณ 24%</b> (63.9 เทียบกับ 51.5 วินาที/คัน)</li>
+      <li><b>ช่วงเทศกาลสงกรานต์ ปริมาณการจราจรลดลง 30%</b> (ระยะเวลาหน่วงเฉลี่ย 44.6 วินาที/คัน) ซึ่งควรแยกพิจารณาในรายงานเชิงนโยบาย</li>
+      <li><b>สัดส่วนการทำงานของระบบ Adaptive อยู่ที่ 80–93%</b> แสดงถึงการเปิดใช้งานระบบในอัตราสูงในทุกรูปแบบวัน</li>
+      <li><b>ทางแยกที่มีระยะเวลาหน่วงสูงสุด 5 อันดับแรก (เกิน 100 วินาที/คัน):</b> อโศก, พระราม 4, พระราม 9, วิทยุ, และราชประสงค์ ซึ่งจำเป็นต้องวิเคราะห์ข้อมูลเชิงลึกเพิ่มเติม</li>
+    </ul>
+  </div>
+
+  <div class="tabs">
+    <div class="tab active" data-tab="overview">📊 ภาพรวมระบบ (Overview)</div>
+    <div class="tab" data-tab="ranking">🏆 การจัดอันดับทางแยก (Ranking)</div>
+    <div class="tab" data-tab="patterns">📈 รูปแบบรายเวลา (Patterns)</div>
+    <div class="tab" data-tab="drilldown">🔍 วิเคราะห์รายจุด (Drill-down)</div>
+  </div>
+  
+  <div class="footer">ผู้วิเคราะห์: © Prapawadee_W. · กลุ่มงานสถิติและวิจัย · กองพัฒนาระบบจราจร · สำนักการจราจรและขนส่ง (BMA)</div>
+</div>
+
+<script>
+  // 1. พาเลตสีพาสเทลสำหรับกราฟแท่ง (Bar Charts)
+  const pastelPalette = ['#AEC6CF', '#FFB6C1', '#77DD77', '#FDFD96', '#CFCFC4', '#F49AC2', '#B39EB5', '#FFD1DC', '#B4E197'];
+  
+  // 2. ชุดสีสำหรับแยกหมวดหมู่วัน (Day Category) ให้เป็นโทนพาสเทล
+  const COLORS = {
+    "Weekday": "#89b4e3", // ฟ้าพาสเทล
+    "Weekend": "#a2d9a6", // เขียวพาสเทล
+    "สงกรานต์": "#ffb3ba", // ชมพูพาสเทล
+    "วันคั่นวันหยุด": "#ffd8b1" // ส้มอ่อนพาสเทล
+  };
+
+  // 3. กำหนด Font เริ่มต้นให้ Plotly ทุกกราฟใช้ Sarabun
+  const defaultLayout = {
+    font: { family: 'Sarabun, sans-serif' }
+  };
+
+  // --- ข้อมูลดิบ ---
+  // นำ const drillData = { ... }; ของคุณมาวางต่อตรงนี้ได้เลย
+
+  // Drill-down
+function renderDrill(jid) {
+  const d = drillData[jid];
+  if (!d) return;
+  document.getElementById('drill-kpis').innerHTML = `
+    <div class="kpi-card"><div class="label">Junction Rank</div><div class="value">#${d.rank}</div><div class="sub">จาก 73 จุด</div></div>
+    <div class="kpi-card delay"><div class="label">Weighted Delay</div><div class="value">${d.overall_delay}</div><div class="sub">sec/veh</div></div>
+    <div class="kpi-card volume"><div class="label">Total Volume (3 wks)</div><div class="value">${d.total_volume.toLocaleString()}</div><div class="sub">vehicles</div></div>
+    <div class="kpi-card adaptive"><div class="label">Avg Adaptive</div><div class="value">${d.avg_adaptive}%</div><div class="sub">activation</div></div>
+  `;
+  function makeTraces(metric, ytitle) {
+    const cats = Object.keys(d[metric]);
+    return cats.map(c => ({
+      x: d[metric][c].map(v => v[0]),
+      y: d[metric][c].map(v => v[1]),
+      name: c, mode: 'lines+markers',
+      line: {color: COLORS[c], width: 2.5}, marker: {size:7}
+    }));
+  }
+  const layout = (title, ytitle) => ({
+    title: title, xaxis: {title:'Hour', tickmode:'linear', dtick:1},
+    yaxis: {title: ytitle}, height: 400, template: 'plotly_white', hovermode:'x unified'
+  });
+  Plotly.newPlot('drill-delay', makeTraces('hourly_delay', 'Delay (sec/veh)'), layout('Delay × Hour × Day Category', 'Delay (sec/veh)'), {responsive:true});
+  Plotly.newPlot('drill-volume', makeTraces('hourly_volume', 'Volume'), layout('Volume × Hour × Day Category', 'Volume (veh/hr)'), {responsive:true});
+  Plotly.newPlot('drill-adaptive', makeTraces('hourly_adaptive', 'Adaptive (%)'), layout('Adaptive Activation × Hour × Day Category', 'Adaptive (%)'), {responsive:true});
+}
+document.getElementById('junction-select').onchange = (e) => renderDrill(e.target.value);
+renderDrill(document.getElementById('junction-select').value);
+</script>
+</body>
+</html>
