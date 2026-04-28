@@ -425,7 +425,7 @@
         const junctionSelect = document.getElementById('junctionSelect');
         const chartTitle = document.getElementById('chart-title');
         const chartSubtitle = document.getElementById('chart-subtitle');
-        const studyWindow = document.getElementById('study-window');
+        const studyWindow = document.getElementById('study-window') || document.getElementById('study');
         const coverageCount = document.getElementById('coverage-count');
         const selectedJunction = document.getElementById('selected-junction');
         const selectedRank = document.getElementById('selected-rank');
@@ -433,11 +433,11 @@
         let delayChart;
 
         function initializeSummary() {
-            if (dashboardData.studyWindow) {
+            if (dashboardData.studyWindow && studyWindow) {
                 studyWindow.textContent = dashboardData.studyWindow;
             }
 
-            if (dashboardData.junctionCount) {
+            if (dashboardData.junctionCount && coverageCount) {
                 coverageCount.textContent = `${dashboardData.junctionCount} Junctions`;
             }
         }
@@ -459,11 +459,18 @@
                 optgroup.appendChild(option);
             });
 
-            junctionSelect.appendChild(optgroup);
+            if (junctionSelect) {
+                junctionSelect.appendChild(optgroup);
+            }
         }
 
         function initChart() {
-            const ctx = document.getElementById('delayChart').getContext('2d');
+            const chartCanvas = document.getElementById('delayChart');
+            if (!chartCanvas) {
+                return;
+            }
+
+            const ctx = chartCanvas.getContext('2d');
             delayChart = new Chart(ctx, {
                 type: 'line',
                 data: {
@@ -543,9 +550,21 @@
             const adaptive = safeData.adaptive ?? '-';
             const volume = safeData.vol ?? '-';
 
-            document.getElementById(`${prefix}-delay`).innerHTML = `${delay} <span>sec</span>`;
-            document.getElementById(`${prefix}-adapt`).textContent = `Adaptive Active: ${adaptive}%`;
-            document.getElementById(`${prefix}-vol`).textContent = `Volume: ${volume} / day`;
+            const delayNode = document.getElementById(`${prefix}-delay`);
+            const adaptiveNode = document.getElementById(`${prefix}-adapt`);
+            const volumeNode = document.getElementById(`${prefix}-vol`);
+
+            if (delayNode) {
+                delayNode.innerHTML = `${delay} <span>sec</span>`;
+            }
+
+            if (adaptiveNode) {
+                adaptiveNode.textContent = `Adaptive Active: ${adaptive}%`;
+            }
+
+            if (volumeNode) {
+                volumeNode.textContent = `Volume: ${volume} / day`;
+            }
         }
 
         function updateUI(junctionName) {
@@ -554,28 +573,42 @@
             const dataHourly = isOverall ? globalHourly : junctionData[junctionName].hourly;
             const ranking = isOverall ? null : junctionData[junctionName].ranking;
 
-            chartTitle.textContent = isOverall
-                ? 'Hourly Delay Trend: ภาพรวมทั้งหมด'
-                : `Hourly Delay Trend: ${junctionName}`;
+            if (chartTitle) {
+                chartTitle.textContent = isOverall
+                    ? 'Hourly Delay Trend: ภาพรวมทั้งหมด'
+                    : `Hourly Delay Trend: ${junctionName}`;
+            }
 
-            chartSubtitle.textContent = isOverall
-                ? 'Average delay by hour for the full pilot area'
-                : `Average delay by hour for junction ${junctionName}`;
+            if (chartSubtitle) {
+                chartSubtitle.textContent = isOverall
+                    ? 'Average delay by hour for the full pilot area'
+                    : `Average delay by hour for junction ${junctionName}`;
+            }
 
-            selectedJunction.textContent = isOverall ? 'ภาพรวมทั้งหมด' : junctionName;
-            selectedRank.textContent = isOverall ? 'Topline Summary' : `Rank #${junctionData[junctionName].rank}`;
-            selectedVolume.textContent = isOverall
-                ? `${dataKpi.Weekday?.vol || '-'} / day`
-                : `${ranking.avgDailyVolume} / day`;
+            if (selectedJunction) {
+                selectedJunction.textContent = isOverall ? 'ภาพรวมทั้งหมด' : junctionName;
+            }
+
+            if (selectedRank) {
+                selectedRank.textContent = isOverall ? 'Topline Summary' : `Rank #${junctionData[junctionName].rank}`;
+            }
+
+            if (selectedVolume) {
+                selectedVolume.textContent = isOverall
+                    ? `${dataKpi.Weekday?.vol || '-'} / day`
+                    : `${ranking.avgDailyVolume} / day`;
+            }
 
             updateKpi('kpi-wd', dataKpi.Weekday);
             updateKpi('kpi-we', dataKpi.Weekend);
             updateKpi('kpi-sk', dataKpi['สงกรานต์']);
 
-            delayChart.data.datasets[0].data = dataHourly.Weekday || new Array(24).fill(0);
-            delayChart.data.datasets[1].data = dataHourly.Weekend || new Array(24).fill(0);
-            delayChart.data.datasets[2].data = dataHourly['สงกรานต์'] || new Array(24).fill(0);
-            delayChart.update();
+            if (delayChart) {
+                delayChart.data.datasets[0].data = dataHourly.Weekday || new Array(24).fill(0);
+                delayChart.data.datasets[1].data = dataHourly.Weekend || new Array(24).fill(0);
+                delayChart.data.datasets[2].data = dataHourly['สงกรานต์'] || new Array(24).fill(0);
+                delayChart.update();
+            }
         }
 
         initializeSummary();
@@ -583,9 +616,11 @@
         initChart();
         updateUI('ALL');
 
-        junctionSelect.addEventListener('change', (event) => {
-            updateUI(event.target.value);
-        });
+        if (junctionSelect) {
+            junctionSelect.addEventListener('change', (event) => {
+                updateUI(event.target.value);
+            });
+        }
     </script>
 </body>
 </html>
