@@ -314,7 +314,7 @@
             <div class="hero-copy">
                 <p class="eyebrow">BMA Statistics and Research Group</p>
                 <h1>BMA Adaptive Signaling Performance</h1>
-                <p>สรุปผลโครงการนำร่องระบบสัญญาณไฟจราจรอัจฉริยะสำหรับ 73 ทางแยก ช่วงวันที่ 1-21 เมษายน 2026 โดยเทียบรูปแบบความหน่วงรายชั่วโมงระหว่างวันทำการ วันหยุด และช่วงสงกรานต์</p>
+                <p>สรุปผลการวิเคราะห์ระบบสัญญาณไฟจราจรอัจฉริยะสำหรับ 73 ทางแยก (โครงการนำร่อง) วันที่ 1-21 เมษายน 2026 โดยเทียบ Delay รายชั่วโมงระหว่างวันทำการ วันหยุด และช่วงสงกรานต์</p>
             </div>
 
             <aside class="hero-panel">
@@ -326,7 +326,7 @@
                 <div class="hero-meta">
                     <div>
                         <span class="card-label">Study Window</span>
-                        <strong id="study-window">1-21 Apr 2026</strong>
+                        <strong id="study">1-21 Apr 2026</strong>
                     </div>
                     <div>
                         <span class="card-label">Coverage</span>
@@ -383,15 +383,15 @@
             <article class="card">
                 <span class="section-label">Key Findings</span>
                 <ol class="insight-list">
-                    <li>วันทำการมีความหน่วงสูงสุดในช่วงเย็น โดยจุดพีคอยู่ที่ 17:00 น. ที่ 77.12 วินาที</li>
-                    <li>วันหยุดมีรูปแบบหน่วงช้ากว่าและกระจายตัวสม่ำเสมอกว่า โดยคงระดับสูงช่วงกลางวันถึงเย็น</li>
-                    <li>ช่วงสงกรานต์มีความหน่วงลดลงชัดเจน แต่ยังเห็นการสะสมของโหลดในช่วงบ่ายถึงหัวค่ำ</li>
+                    <li>วันทำการมีค่า Delay สูงสุดในช่วงเย็น โดยจุดพีคอยู่ที่ 17:00 น. ที่ 77.12 วินาที</li>
+                    <li>วันหยุดมีค่า Delay น้อยกว่าและกระจายตัวสม่ำเสมอกว่า โดยคงระดับสูงช่วงกลางวันถึงเย็น</li>
+                    <li>ช่วงสงกรานต์มีค่า Delay ลดลงชัดเจน แต่ยังมีการสะสมในช่วงบ่ายถึงหัวค่ำ</li>
                 </ol>
             </article>
 
             <article class="card">
                 <span class="section-label">Repository Note</span>
-                <p style="margin: 0; color: var(--muted); line-height: 1.65;">หน้า GitHub นี้โหลดข้อมูลจริงจากไฟล์ในรีโพโดยตรง ทั้ง CSV ที่ export จาก workbook และ payload สำหรับหน้าเว็บ ทำให้ dropdown รายทางแยกและกราฟ KPI sync กับข้อมูลต้นทางชุดเดียวกัน</p>
+                <p style="margin: 0; color: var(--muted); line-height: 1.65;">หน้า Dashboard นี้ใช้ข้อมูลจริงจาก CSV ที่ได้จากระบบ Adaptive Signaling ของสำนักงานวิศวกรรมจราจร สำนักการจราจรและขนส่ง เพื่อเป็นการทดสอบการวิเคราะห์ข้อมูลทางสถิติ</p>
                 <div class="insight-grid">
                     <div class="insight-pill">
                         <span class="card-label">Selected Junction</span>
@@ -409,7 +409,7 @@
             </article>
         </section>
 
-        <div class="footer">© Prapawadee_W | Statistics and Research Group, BMA</div>
+        <div class="footer">วิเคราะห์โดย © Prapawadee_W | Statistics and Research Group, BMA</div>
     </main>
 
     <script src="data/dashboard-data.js"></script>
