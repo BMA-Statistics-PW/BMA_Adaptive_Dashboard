@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import re
 import sys
 from pathlib import Path
 
@@ -103,8 +104,11 @@ def build_payload(workbook_path: Path) -> dict:
             }
         )
 
+    asset_version = pd.Timestamp.utcnow().strftime("%Y%m%d%H%M%S")
+
     return {
         "generatedAt": pd.Timestamp.utcnow().strftime("%Y-%m-%d %H:%M UTC"),
+        "assetVersion": asset_version,
         "studyWindow": "1-21 Apr 2026",
         "junctionCount": int(df_ranking["Junction_Name"].nunique()),
         "dayCategories": day_categories,
@@ -131,6 +135,22 @@ def write_payload(payload: dict, output_dir: Path) -> None:
     )
 
 
+def update_index_asset_version(repo_root: Path, asset_version: str) -> None:
+    index_path = repo_root / "index.html"
+    html = index_path.read_text(encoding="utf-8")
+    updated_html, replacements = re.subn(
+        r'<script src="data/dashboard-data\.js(?:\?v=[^"]*)?"></script>',
+        f'<script src="data/dashboard-data.js?v={asset_version}"></script>',
+        html,
+        count=1,
+    )
+
+    if replacements != 1:
+        raise RuntimeError("Unable to update dashboard-data.js asset version in index.html")
+
+    index_path.write_text(updated_html, encoding="utf-8")
+
+
 def main() -> int:
     workbook_arg = Path(sys.argv[1]) if len(sys.argv) > 1 else Path("Statistics_Summary.xlsx")
     repo_root = Path(__file__).resolve().parents[1]
@@ -143,6 +163,7 @@ def main() -> int:
     payload = build_payload(workbook_arg)
     export_csvs(workbook_arg, output_dir)
     write_payload(payload, output_dir)
+    update_index_asset_version(repo_root, payload["assetVersion"])
     print(f"Generated data files in: {output_dir}")
     return 0
 

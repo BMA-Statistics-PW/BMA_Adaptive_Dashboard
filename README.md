@@ -25,7 +25,7 @@ https://bma-statistics-pw.github.io/BMA_Adaptive_Dashboard/
 python scripts/generate_dashboard_data.py "D:\Adaptive_Volume\_Merged\Statistics_Summary.xlsx"
 ```
 
-สคริปต์จะ export CSV ทั้ง 3 ชุดและสร้าง `data/dashboard-data.js` ใหม่ให้ตรงกับ workbook ต้นทาง
+สคริปต์จะ export CSV ทั้ง 3 ชุด สร้าง `data/dashboard-data.js` ใหม่ให้ตรงกับ workbook ต้นทาง และอัปเดต query-string version ของ script ใน `index.html` ให้อัตโนมัติเพื่อช่วยลดปัญหา cache ค้างของ asset
 
 ## Dashboard Features
 
@@ -52,3 +52,4 @@ python scripts/generate_dashboard_data.py "D:\Adaptive_Volume\_Merged\Statistics
 
 - รีโพนี้ deploy ได้จากไฟล์ static บน branch `main`
 - หาก workbook เปลี่ยน ให้ regenerate data แล้ว commit/push ใหม่เพื่ออัปเดตหน้าเว็บ
+- GitHub Pages ของรีโพนี้ส่ง `index.html` และ `dashboard-data.js` ด้วย cache ประมาณ 10 นาที ดังนั้น query-string version จะช่วยบังคับรีโหลด asset ใหม่เมื่อหน้า HTML เวอร์ชันใหม่ถูกเสิร์ฟ
