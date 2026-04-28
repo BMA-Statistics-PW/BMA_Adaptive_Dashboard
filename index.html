@@ -957,9 +957,14 @@
   }
 
   // Event Listener for Junction Selection
-  document.getElementById('junction-select').addEventListener('change', (e) => {
-    renderDrill(e.target.value);
-  });
+  const junctionSelect = document.getElementById('junction-select');
+  if (junctionSelect) {
+    junctionSelect.addEventListener('change', (e) => {
+      renderDrill(e.target.value);
+    });
+    // Initialize drill-down data
+    renderDrill(junctionSelect.value);
+  }
 
   // Initialize first render
   renderOverview();
