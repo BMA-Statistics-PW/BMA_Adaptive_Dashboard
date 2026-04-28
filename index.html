@@ -3,18 +3,25 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Adaptive Signaling Pilot Dashboard - BMA</title>
+<meta name="description" content="BMA Adaptive Signaling Pilot Dashboard - Interactive Analysis">
+<title>BMA Adaptive Signaling Pilot Dashboard</title>
 <script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;700&display=swap" rel="stylesheet">
 <style>
-  * { box-sizing: border-box; margin: 0; padding: 0; }
+  * { 
+    box-sizing: border-box; 
+    margin: 0; 
+    padding: 0; 
+  }
+  
   body { 
     font-family: 'Sarabun', sans-serif; 
     background: #f8fafc; 
-    color: #334155; 
+    color: #334155;
+    line-height: 1.6;
   }
   
-  /* ส่วนหัวกระดาษ (Header) - ปรับโทนสีกรมท่า-ฟ้า ของกทม. */
+  /* ===== HEADER SECTION ===== */
   .header { 
     background: linear-gradient(135deg, #1e3a8a, #3b82f6); 
     color: white; 
@@ -22,17 +29,19 @@
     box-shadow: 0 4px 12px rgba(0,0,0,0.1); 
     text-align: center;
   }
-  .header h1 { 
-    font-size: clamp(22px, 3.5vw, 32px); /* ปรับขนาดอัตโนมัติ */
+  
+  .header h1 {
+    font-size: clamp(22px, 3.5vw, 32px);
     margin-bottom: 8px; 
     font-weight: 700; 
   }
+  
   .header p { 
     opacity: 0.9; 
     font-size: clamp(14px, 2vw, 16px); 
   }
 
-  /* การจัด Container พื้นฐาน */
+  /* ===== CONTAINER ===== */
   .container { 
     width: 95%; 
     max-width: 1400px; 
@@ -40,167 +49,921 @@
     padding: 30px 0; 
   }
 
-  /* การจัด Layout ของ KPI Card แบบ Responsive (Mobile/Tablet/PC) */
+  /* ===== KPI GRID ===== */
   .kpi-grid { 
     display: grid; 
-    grid-template-columns: 1fr; /* Mobile: 1 คอลัมน์ */
+    grid-template-columns: 1fr;
     gap: 16px; 
     margin-bottom: 30px; 
   }
+  
   @media (min-width: 640px) {
-    .kpi-grid { grid-template-columns: repeat(2, 1fr); } /* Tablet: 2 คอลัมน์ */
+    .kpi-grid { grid-template-columns: repeat(2, 1fr); }
   }
+  
   @media (min-width: 1024px) {
-    .kpi-grid { grid-template-columns: repeat(5, 1fr); } /* PC: 5 คอลัมน์ */
+    .kpi-grid { grid-template-columns: repeat(5, 1fr); }
   }
 
-  /* การออกแบบ KPI Card ภาษาทางการและใช้สีพาสเทล */
+  /* ===== KPI CARD ===== */
   .kpi-card { 
     background: white; 
     padding: 24px 20px; 
     border-radius: 12px; 
     box-shadow: 0 2px 8px rgba(0,0,0,0.04); 
-    border-left: 5px solid #89b4e3; /* สีฟ้าพาสเทลพื้นฐาน */
-    transition: transform 0.2s;
+    border-left: 5px solid #89b4e3;
+    transition: all 0.3s ease;
   }
-  .kpi-card:hover { transform: translateY(-2px); }
-  .kpi-card .label { font-size: 14px; color: #64748b; font-weight: 500; margin-bottom: 8px; }
-  .kpi-card .value { font-size: 28px; font-weight: 700; color: #0f172a; }
-  .kpi-card .sub { font-size: 13px; color: #94a3b8; margin-top: 4px; }
+  
+  .kpi-card:hover { 
+    transform: translateY(-4px);
+    box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+  }
+  
+  .kpi-card .label { 
+    font-size: 14px; 
+    color: #64748b; 
+    font-weight: 500; 
+    margin-bottom: 8px; 
+  }
+  
+  .kpi-card .value { 
+    font-size: 28px; 
+    font-weight: 700; 
+    color: #0f172a; 
+  }
+  
+  .kpi-card .sub { 
+    font-size: 13px; 
+    color: #94a3b8; 
+    margin-top: 4px; 
+  }
 
-  /* ปรับแถบสีด้านซ้ายของ Card ให้เป็นโทนพาสเทลที่ดูสบายตา */
-  .kpi-card.delay { border-color: #ffb6c1; } /* สีชมพูพาสเทล */
-  .kpi-card.volume { border-color: #a2d9a6; } /* สีเขียวพาสเทล */
-  .kpi-card.adaptive { border-color: #fdfd96; } /* สีเหลืองพาสเทล */
+  .kpi-card.delay { border-color: #ffb6c1; }
+  .kpi-card.volume { border-color: #a2d9a6; }
+  .kpi-card.adaptive { border-color: #fdfd96; }
+  .kpi-card.data { border-color: #b4d1ff; }
 
-  /* ส่วน Tabs */
+  /* ===== INSIGHT BOX ===== */
+  .insight-box { 
+    background: #f8fafc; 
+    border-left: 4px solid #94a3b8; 
+    padding: 16px; 
+    border-radius: 8px; 
+    margin-bottom: 20px;
+  }
+  
+  .insight-box h3 {
+    font-size: 16px; 
+    color: #334155; 
+    margin-bottom: 8px; 
+  }
+  
+  .insight-box ul {
+    margin-left: 20px; 
+    font-size: 14px; 
+    color: #475569; 
+    line-height: 1.6; 
+  }
+
+  /* ===== TABS ===== */
   .tabs { 
-    display: flex; gap: 4px; background: white; padding: 6px; 
-    border-radius: 12px; margin-bottom: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); 
+    display: flex; 
+    gap: 4px; 
+    background: white; 
+    padding: 6px; 
+    border-radius: 12px; 
+    margin-bottom: 20px; 
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
     flex-wrap: wrap;
   }
+  
   .tab { 
-    padding: 12px 24px; cursor: pointer; border-radius: 8px; 
-    font-weight: 500; transition: all 0.2s; flex: 1; text-align: center; 
+    padding: 12px 24px; 
+    cursor: pointer; 
+    border-radius: 8px; 
+    font-weight: 500; 
+    transition: all 0.2s; 
+    flex: 1; 
+    text-align: center; 
     min-width: 120px;
+    background: #f1f5f9;
+    border: none;
+    font-family: 'Sarabun', sans-serif;
   }
-  .tab.active { background: #89b4e3; color: #1e293b; }
-  .tab:not(.active):hover { background: #f1f5f9; }
+  
+  .tab.active {
+    background: #89b4e3; 
+    color: white; 
+    box-shadow: 0 2px 8px rgba(137, 180, 227, 0.3);
+  }
+  
+  .tab:not(.active):hover { 
+    background: #e2e8f0; 
+  }
 
-  /* ส่วนเนื้อหากราฟ (Panels & Charts) */
+  /* ===== PANELS ===== */
   .panel { 
-    background: white; border-radius: 12px; padding: 24px; 
-    margin-bottom: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); 
+    background: white; 
+    border-radius: 12px; 
+    padding: 24px; 
+    margin-bottom: 20px; 
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
     overflow-x: auto;
   }
-  .panel h2 { font-size: 18px; margin-bottom: 16px; color: #1e293b; padding-bottom: 12px; border-bottom: 2px solid #f1f5f9; }
   
-  .charts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-  @media (max-width: 968px) { .charts-grid { grid-template-columns: 1fr; } } /* ยุบรวมเป็น 1 คอลัมน์เมื่อจอเล็ก */
+  .panel h2 { 
+    font-size: 18px; 
+    margin-bottom: 16px; 
+    color: #1e293b; 
+    padding-bottom: 12px; 
+    border-bottom: 2px solid #f1f5f9; 
+  }
+  
+  .panel-content {
+    display: none;
+  }
 
-  .hidden { display: none; }
+  .panel-content.active {
+    display: block;
+  }
+
+  /* ===== CHARTS GRID ===== */
+  .charts-grid { 
+    display: grid; 
+    grid-template-columns: 1fr 1fr; 
+    gap: 20px; 
+  }
   
+  @media (max-width: 968px) { 
+    .charts-grid { grid-template-columns: 1fr; }
+  }
+
+  .chart-wrapper {
+    background: #f8fafc;
+    border-radius: 8px;
+    padding: 8px;
+  }
+
+  /* ===== CONTROLS ===== */
+  .controls {
+    margin-bottom: 20px;
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+
+  .controls label {
+    font-weight: 500;
+    color: #334155;
+  }
+
   .controls select { 
-    padding: 10px 14px; border: 1px solid #cbd5e1; border-radius: 8px; 
-    font-size: 14px; min-width: 250px; background: white; font-family: 'Sarabun', sans-serif;
+    padding: 10px 14px; 
+    border: 1px solid #cbd5e1; 
+    border-radius: 8px; 
+    font-size: 14px; 
+    background: white; 
+    font-family: 'Sarabun', sans-serif;
+    cursor: pointer;
+    transition: border 0.2s;
   }
 
-  /* กล่องข้อค้นพบ (Insights) */
-  .insight-box { 
-    background: #f8fafc; border-left: 4px solid #94a3b8; 
-    padding: 16px; border-radius: 8px; margin-bottom: 20px; 
+  .controls select:hover {
+    border-color: #89b4e3;
   }
-  .insight-box h3 { font-size: 16px; color: #334155; margin-bottom: 8px; }
-  .insight-box ul { margin-left: 20px; font-size: 14px; color: #475569; line-height: 1.6; }
 
-  .footer { text-align: center; padding: 30px; color: #64748b; font-size: 14px; border-top: 1px solid #e2e8f0; margin-top: 20px;}
+  .controls select:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  }
+
+  /* ===== HIDDEN ===== */
+  .hidden { display: none; }
+
+  /* ===== FOOTER ===== */
+  .footer {
+    text-align: center; 
+    padding: 30px; 
+    color: #64748b; 
+    font-size: 14px; 
+    border-top: 1px solid #e2e8f0; 
+    margin-top: 20px;
+  }
+
+  /* ===== RESPONSIVE ===== */
+  @media (max-width: 640px) {
+    .tabs {
+      gap: 0;
+    }
+    
+    .tab {
+      padding: 10px 12px;
+      font-size: 13px;
+      min-width: 100px;
+    }
+  }
+
+  /* ===== LOADING STATE ===== */
+  .loading {
+    text-align: center;
+    padding: 20px;
+    color: #64748b;
+  }
 </style>
 </head>
 <body>
 
 <div class="header">
-  <h1>Pilot การวิเคราะห์ข้อมูลจากระบบ Adaptive Signaling ของสำนักการจราจรและขนส่ง</h1>
-  <p>ข้อมูลวันที่ 1–21 เมษายน 2569</p>
+  <h1>📊 Pilot การวิเคราะห์ข้อมูลจากระบบ Adaptive Signaling</h1>
+  <p>ของสำนักการจราจรและขนส่ง (สจจ.) กรุงเทพมหานคร</p>
+  <p style="margin-top: 8px; font-size: 14px;">ข้อมูลวันที่ 1–21 เมษายน 2569</p>
 </div>
 
 <div class="container">
+  
+  <!-- KPI SECTION -->
   <div class="kpi-grid">
-    <div class="kpi-card"><div class="label">จำนวนจุดสำรวจ</div><div class="value">73</div><div class="sub">ทางแยกในระบบ</div></div>
-    <div class="kpi-card volume"><div class="label">ปริมาณจราจรเฉลี่ยต่อวัน (ต่อทางแยก)</div><div class="value">71,428</div><div class="sub">คัน / วัน</div></div>
-    <div class="kpi-card delay"><div class="label">ระยะเวลาหน่วงเฉลี่ยถ่วงน้ำหนัก</div><div class="value">56.71</div><div class="sub">วินาที / คัน</div></div>
-    <div class="kpi-card adaptive"><div class="label">สัดส่วนการทำงานของระบบ Adaptive</div><div class="value">84.7%</div><div class="sub">ในภาพรวม</div></div>
-    <div class="kpi-card"><div class="label">ปริมาณข้อมูลที่นำมาวิเคราะห์</div><div class="value">36,792</div><div class="sub">รายการ (21 วัน)</div></div>
+    <div class="kpi-card">
+      <div class="label">จำนวนจุดสำรวจ</div>
+      <div class="value">73</div>
+      <div class="sub">ทางแยกในระบบ</div>
+    </div>
+    
+    <div class="kpi-card volume">
+      <div class="label">ปริมาณจราจรเฉลี่ย</div>
+      <div class="value">71,428</div>
+      <div class="sub">คัน / วัน</div>
+    </div>
+
+    <div class="kpi-card delay">
+      <div class="label">ระยะเวลาหน่วง</div>
+      <div class="value">56.71</div>
+      <div class="sub">วินาที / คัน</div>
+    </div>
+    
+    <div class="kpi-card adaptive">
+      <div class="label">การทำงาน Adaptive</div>
+      <div class="value">84.7%</div>
+      <div class="sub">ในภาพรวม</div>
+    </div>
+    
+    <div class="kpi-card data">
+      <div class="label">ข้อมูลที่วิเคราะห์</div>
+      <div class="value">36,792</div>
+      <div class="sub">รายการ (21 วัน)</div>
+    </div>
   </div>
 
+  <!-- INSIGHTS SECTION -->
   <div class="insight-box">
     <h3>💡 สรุปข้อค้นพบเบื้องต้นจากการวิเคราะห์</h3>
     <ul>
-      <li><b>วันทำการมีระยะเวลาหน่วงสูงกว่าวันหยุดประมาณ 24%</b> (63.9 เทียบกับ 51.5 วินาที/คัน)</li>
-      <li><b>ช่วงเทศกาลสงกรานต์ ปริมาณการจราจรลดลง 30%</b> (ระยะเวลาหน่วงเฉลี่ย 44.6 วินาที/คัน) ซึ่งควรแยกพิจารณาในรายงานเชิงนโยบาย</li>
-      <li><b>สัดส่วนการทำงานของระบบ Adaptive อยู่ที่ 80–93%</b> แสดงถึงการเปิดใช้งานระบบในอัตราสูงในทุกรูปแบบวัน</li>
-      <li><b>ทางแยกที่มีระยะเวลาหน่วงสูงสุด 5 อันดับแรก (เกิน 100 วินาที/คัน):</b> อโศก, พระราม 4, พระราม 9, วิทยุ, และราชประสงค์ ซึ่งจำเป็นต้องวิเคราะห์ข้อมูลเชิงลึกเพิ่มเติม</li>
+      <li><b>วันทำการ</b> มีระยะเวลาหน่วงสูงกว่าวันหยุด ประมาณ <b>24%</b> (63.9 เทียบกับ 51.5 วินาที/คัน)</li>
+      <li><b>ช่วงเทศกาลสงกรานต์</b> ปริมาณการจราจรลดลง <b>30%</b> (ระยะเวลาหน่วงเฉลี่ย 44.6 วินาที/คัน)</li>
+      <li><b>สัดส่วนการทำงาน</b> ของระบบ Adaptive อยู่ที่ <b>80–93%</b> ในทุกรูปแบบวัน</li>
+      <li><b>ทางแยกที่มีหน่วงสูง (TOP 5):</b> อโศก, พระราม 4, พระราม 9, วิทยุ, และราชประสงค์ (เกิน 100 วินาที/คัน)</li>
     </ul>
   </div>
 
+  <!-- TAB NAVIGATION -->
   <div class="tabs">
-    <div class="tab active" data-tab="overview">📊 ภาพรวมระบบ (Overview)</div>
-    <div class="tab" data-tab="ranking">🏆 การจัดอันดับทางแยก (Ranking)</div>
-    <div class="tab" data-tab="patterns">📈 รูปแบบรายเวลา (Patterns)</div>
-    <div class="tab" data-tab="drilldown">🔍 วิเคราะห์รายจุด (Drill-down)</div>
+    <button class="tab active" data-tab="overview">📊 ภาพรวมระบบ</button>
+    <button class="tab" data-tab="ranking">🏆 การจัดอันดับทางแยก</button>
+    <button class="tab" data-tab="patterns">📈 รูปแบบรายเวลา</button>
+    <button class="tab" data-tab="drilldown">🔍 วิเคราะห์รายจุด</button>
   </div>
-  
-  <div class="footer">ผู้วิเคราะห์: © Prapawadee_W. · กลุ่มงานสถิติและวิจัย · กองนโยบายและแผนงาน · สำนักการจราจรและขนส่ง </div>
+
+  <!-- PANEL 1: OVERVIEW -->
+  <div class="panel-content active" id="panel-overview">
+    <div class="panel">
+      <h2>📊 ภาพรวมระบบ Adaptive Signaling</h2>
+      <div class="charts-grid">
+        <div class="chart-wrapper">
+          <div id="overview-delay"></div>
+        </div>
+        <div class="chart-wrapper">
+          <div id="overview-volume"></div>
+        </div>
+        <div class="chart-wrapper">
+          <div id="overview-adaptive"></div>
+        </div>
+        <div class="chart-wrapper">
+          <div id="overview-comparison"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PANEL 2: RANKING -->
+  <div class="panel-content" id="panel-ranking">
+    <div class="panel">
+      <h2>🏆 การจัดอันดับ 20 ทางแยกที่มีระยะเวลาหน่วงสูงสุด</h2>
+      <div class="charts-grid" style="grid-template-columns: 1fr;">
+        <div class="chart-wrapper">
+          <div id="ranking-delay"></div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="panel">
+      <h2>📊 อื่นๆ</h2>
+      <div class="charts-grid">
+        <div class="chart-wrapper">
+          <div id="ranking-volume"></div>
+        </div>
+        <div class="chart-wrapper">
+          <div id="ranking-adaptive"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PANEL 3: PATTERNS -->
+  <div class="panel-content" id="panel-patterns">
+    <div class="panel">
+      <h2>📈 รูปแบบการจราจรรายชั่วโมง (Hourly Patterns)</h2>
+      <div class="charts-grid" style="grid-template-columns: 1fr;">
+        <div class="chart-wrapper">
+          <div id="patterns-hourly-delay"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>📊 เปรียบเทียบระหว่างประเภทวัน</h2>
+      <div class="charts-grid">
+        <div class="chart-wrapper">
+          <div id="patterns-category-delay"></div>
+        </div>
+        <div class="chart-wrapper">
+          <div id="patterns-category-volume"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PANEL 4: DRILL-DOWN -->
+  <div class="panel-content" id="panel-drilldown">
+    <div class="panel">
+      <h2>🔍 วิเคราะห์รายจุดของทางแยก</h2>
+      
+      <div class="controls">
+        <label for="junction-select">เลือกทางแยก:</label>
+        <select id="junction-select">
+          <option value="asok">อโศก (Asok)</option>
+          <option value="ratchaprasong">ราชประสงค์ (Ratchaprasong)</option>
+          <option value="rama4">พระราม 4 (Rama 4)</option>
+          <option value="rama9">พระราม 9 (Rama 9)</option>
+          <option value="withayu">วิทยุ (Withayu)</option>
+        </select>
+      </div>
+
+      <div id="drill-kpis" class="kpi-grid"></div>
+
+      <div class="charts-grid" style="grid-template-columns: 1fr;">
+        <div class="chart-wrapper">
+          <div id="drill-delay"></div>
+        </div>
+      </div>
+
+      <div class="charts-grid">
+        <div class="chart-wrapper">
+          <div id="drill-volume"></div>
+        </div>
+        <div class="chart-wrapper">
+          <div id="drill-adaptive"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">
+    <p><strong>ผู้วิเคราะห์:</strong> Prapawadee_W. · กลุ่มงานสถิติและวิจัย · กองนโยบายและแผนงาน · สำนักการจราจรและขนส่ง</p>
+    <p style="margin-top: 8px; font-size: 12px; color: #94a3b8;">© 2569 สำนักการจราจรและขนส่ง กรุงเทพมหานคร</p>
+  </div>
+
 </div>
 
 <script>
-  // 1. พาเลตสีพาสเทลสำหรับกราฟแท่ง (Bar Charts)
-  const pastelPalette = ['#AEC6CF', '#FFB6C1', '#77DD77', '#FDFD96', '#CFCFC4', '#F49AC2', '#B39EB5', '#FFD1DC', '#B4E197'];
+  // ===== COLOR PALETTE =====
+  const pastelPalette = ['#AEC6CF', '#FFB6C1', '#77DD77', '#FDFD96', '#CFCFC4',
+                         '#F49AC2', '#B39EB5', '#FFD1DC', '#B4E197'];
   
-  // 2. ชุดสีสำหรับแยกหมวดหมู่วัน (Day Category) ให้เป็นโทนพาสเทล
   const COLORS = {
-    "Weekday": "#89b4e3", // ฟ้าพาสเทล
-    "Weekend": "#a2d9a6", // เขียวพาสเทล
-    "สงกรานต์": "#ffb3ba", // ชมพูพาสเทล
-    "วันคั่นวันหยุด": "#ffd8b1" // ส้มอ่อนพาสเทล
+    "Weekday": "#89b4e3",
+    "Weekend": "#a2d9a6",
+    "สงกรานต์": "#ffb3ba",
+    "วันคั่นวันหยุด": "#ffd8b1"
   };
 
-  // 3. กำหนด Font เริ่มต้นให้ Plotly ทุกกราฟใช้ Sarabun
   const defaultLayout = {
-    font: { family: 'Sarabun, sans-serif' }
+    font: { family: 'Sarabun, sans-serif' },
+    margin: { l: 60, r: 40, t: 40, b: 60 }
   };
 
-  // --- ข้อมูลดิบ ---
-  // นำ const drillData = { ... }; ของคุณมาวางต่อตรงนี้ได้เลย
+  // ===== SAMPLE DATA =====
+  const sampleJunctions = [
+    { name: 'อโศก', delay: 125, volume: 85000, adaptive: 88 },
+    { name: 'ราชประสงค์', delay: 112, volume: 78000, adaptive: 85 },
+    { name: 'พระราม 4', delay: 108, volume: 72000, adaptive: 82 },
+    { name: 'พระราม 9', delay: 105, volume: 80000, adaptive: 87 },
+    { name: 'วิทยุ', delay: 102, volume: 75000, adaptive: 84 },
+    { name: 'สิลม', delay: 95, volume: 70000, adaptive: 81 },
+    { name: 'หลัง เพชรบุรี', delay: 92, volume: 68000, adaptive: 80 },
+    { name: 'สยาม', delay: 88, volume: 76000, adaptive: 83 },
+    { name: 'ชิดลม', delay: 85, volume: 72000, adaptive: 79 },
+    { name: 'ราชเทวี', delay: 82, volume: 71000, adaptive: 78 },
+  ];
 
-  // Drill-down
-function renderDrill(jid) {
-  const d = drillData[jid];
-  if (!d) return;
-  document.getElementById('drill-kpis').innerHTML = `
-    <div class="kpi-card"><div class="label">Junction Rank</div><div class="value">#${d.rank}</div><div class="sub">จาก 73 จุด</div></div>
-    <div class="kpi-card delay"><div class="label">Weighted Delay</div><div class="value">${d.overall_delay}</div><div class="sub">sec/veh</div></div>
-    <div class="kpi-card volume"><div class="label">Total Volume (3 wks)</div><div class="value">${d.total_volume.toLocaleString()}</div><div class="sub">vehicles</div></div>
-    <div class="kpi-card adaptive"><div class="label">Avg Adaptive</div><div class="value">${d.avg_adaptive}%</div><div class="sub">activation</div></div>
-  `;
-  function makeTraces(metric, ytitle) {
-    const cats = Object.keys(d[metric]);
-    return cats.map(c => ({
-      x: d[metric][c].map(v => v[0]),
-      y: d[metric][c].map(v => v[1]),
-      name: c, mode: 'lines+markers',
-      line: {color: COLORS[c], width: 2.5}, marker: {size:7}
-    }));
-  }
-  const layout = (title, ytitle) => ({
-    title: title, xaxis: {title:'Hour', tickmode:'linear', dtick:1},
-    yaxis: {title: ytitle}, height: 400, template: 'plotly_white', hovermode:'x unified'
+  const drillData = {
+    "asok": {
+      rank: 1,
+      name: "อโศก",
+      overall_delay: "125.4",
+      total_volume: "1785000",
+      avg_adaptive: "88",
+      hourly_delay: {
+        "Weekday": [[6, 95], [7, 120], [8, 145], [9, 130], [10, 115], [11, 110], [12, 125], 
+                    [13, 118], [14, 110], [15, 115], [16, 140], [17, 155], [18, 148], 
+                    [19, 130], [20, 105], [21, 85], [22, 65]],
+        "Weekend": [[6, 55], [7, 65], [8, 75], [9, 70], [10, 68], [11, 72], [12, 80],
+                    [13, 78], [14, 75], [15, 72], [16, 78], [17, 85], [18, 88],
+                    [19, 80], [20, 70], [21, 60], [22, 50]],
+        "วันคั่นวันหยุด": [[6, 80], [7, 100], [8, 115], [9, 105], [10, 98], [11, 95], [12, 105],
+                          [13, 100], [14, 92], [15, 98], [16, 110], [17, 120], [18, 115],
+                          [19, 105], [20, 90], [21, 75], [22, 58]]
+      },
+      hourly_volume: {
+        "Weekday": [[6, 8000], [7, 12000], [8, 15000], [9, 14000], [10, 13000], [11, 12500], 
+                    [12, 13000], [13, 12800], [14, 12000], [15, 12500], [16, 14000], 
+                    [17, 15500], [18, 15000], [19, 13000], [20, 10000], [21, 7000], [22, 5000]],
+        "Weekend": [[6, 4000], [7, 5000], [8, 6000], [9, 5800], [10, 5500], [11, 5700], 
+                    [12, 6500], [13, 6200], [14, 5900], [15, 5800], [16, 6200], 
+                    [17, 7000], [18, 7200], [19, 6500], [20, 5500], [21, 4000], [22, 2500]],
+        "วันคั่นวันหยุด": [[6, 6500], [7, 9000], [8, 11000], [9, 10200], [10, 9500], [11, 9200], 
+                          [12, 10000], [13, 9800], [14, 9200], [15, 9500], [16, 10500], 
+                          [17, 11500], [18, 11000], [19, 9800], [20, 8000], [21, 5500], [22, 4000]]
+      },
+      hourly_adaptive: {
+        "Weekday": [[6, 82], [7, 85], [8, 90], [9, 88], [10, 87], [11, 86], [12, 87],
+                    [13, 86], [14, 85], [15, 86], [16, 88], [17, 90], [18, 89],
+                    [19, 87], [20, 85], [21, 80], [22, 75]],
+        "Weekend": [[6, 70], [7, 72], [8, 75], [9, 74], [10, 73], [11, 74], [12, 76],
+                    [13, 75], [14, 74], [15, 73], [16, 75], [17, 77], [18, 78],
+                    [19, 76], [20, 72], [21, 68], [22, 62]],
+        "วันคั่นวันหยุด": [[6, 78], [7, 80], [8, 85], [9, 84], [10, 83], [11, 82], [12, 83],
+                          [13, 82], [14, 81], [15, 82], [16, 84], [17, 86], [18, 85],
+                          [19, 83], [20, 80], [21, 76], [22, 70]]
+      }
+    },
+    "ratchaprasong": {
+      rank: 2,
+      name: "ราชประสงค์",
+      overall_delay: "112.3",
+      total_volume: "1638000",
+      avg_adaptive: "85",
+      hourly_delay: {
+        "Weekday": [[6, 85], [7, 110], [8, 135], [9, 120], [10, 105], [11, 100], [12, 115], 
+                    [13, 108], [14, 100], [15, 105], [16, 130], [17, 145], [18, 138], 
+                    [19, 120], [20, 95], [21, 75], [22, 55]],
+        "Weekend": [[6, 50], [7, 60], [8, 70], [9, 65], [10, 63], [11, 67], [12, 75],
+                    [13, 73], [14, 70], [15, 68], [16, 73], [17, 80], [18, 83],
+                    [19, 75], [20, 65], [21, 55], [22, 45]]
+      },
+      hourly_volume: {
+        "Weekday": [[6, 7000], [7, 11000], [8, 14000], [9, 13000], [10, 12000], [11, 11500], 
+                    [12, 12000], [13, 11800], [14, 11000], [15, 11500], [16, 13000], 
+                    [17, 14500], [18, 14000], [19, 12000], [20, 9000], [21, 6000], [22, 4000]],
+        "Weekend": [[6, 3500], [7, 4500], [8, 5500], [9, 5200], [10, 5000], [11, 5200], 
+                    [12, 6000], [13, 5700], [14, 5400], [15, 5200], [16, 5700], 
+                    [17, 6500], [18, 6700], [19, 6000], [20, 5000], [21, 3500], [22, 2000]],
+        "วันคั่นวันหยุด": [[6, 5500], [7, 8000], [8, 10000], [9, 9200], [10, 8500], [11, 8200], 
+                          [12, 9000], [13, 8800], [14, 8200], [15, 8500], [16, 9500], 
+                          [17, 10500], [18, 10000], [19, 8800], [20, 7000], [21, 4500], [22, 3000]]
+      },
+      hourly_adaptive: {
+        "Weekday": [[6, 80], [7, 83], [8, 88], [9, 86], [10, 85], [11, 84], [12, 85],
+                    [13, 84], [14, 83], [15, 84], [16, 86], [17, 88], [18, 87],
+                    [19, 85], [20, 83], [21, 78], [22, 73]],
+        "Weekend": [[6, 68], [7, 70], [8, 73], [9, 72], [10, 71], [11, 72], [12, 74],
+                    [13, 73], [14, 72], [15, 71], [16, 73], [17, 75], [18, 76],
+                    [19, 74], [20, 70], [21, 66], [22, 60]],
+        "วันคั่นวันหยุด": [[6, 76], [7, 78], [8, 83], [9, 82], [10, 81], [11, 80], [12, 81],
+                          [13, 80], [14, 79], [15, 80], [16, 82], [17, 84], [18, 83],
+                          [19, 81], [20, 78], [21, 74], [22, 68]]
+      }
+    },
+    "rama4": {
+      rank: 3,
+      name: "พระราม 4",
+      overall_delay: "108.2",
+      total_volume: "1512000",
+      avg_adaptive: "82",
+      hourly_delay: {
+        "Weekday": [[6, 80], [7, 105], [8, 130], [9, 115], [10, 100], [11, 95], [12, 110], 
+                    [13, 103], [14, 95], [15, 100], [16, 125], [17, 140], [18, 133], 
+                    [19, 115], [20, 90], [21, 70], [22, 50]],
+        "Weekend": [[6, 48], [7, 58], [8, 68], [9, 63], [10, 61], [11, 65], [12, 73],
+                    [13, 71], [14, 68], [15, 66], [16, 71], [17, 78], [18, 81],
+                    [19, 73], [20, 63], [21, 53], [22, 43]]
+      },
+      hourly_volume: {
+        "Weekday": [[6, 6500], [7, 10000], [8, 13000], [9, 12000], [10, 11000], [11, 10500], 
+                    [12, 11000], [13, 10800], [14, 10000], [15, 10500], [16, 12000], 
+                    [17, 13500], [18, 13000], [19, 11000], [20, 8000], [21, 5500], [22, 3500]],
+        "Weekend": [[6, 3200], [7, 4200], [8, 5200], [9, 4900], [10, 4700], [11, 4900], 
+                    [12, 5700], [13, 5400], [14, 5100], [15, 4900], [16, 5400], 
+                    [17, 6200], [18, 6400], [19, 5700], [20, 4700], [21, 3200], [22, 1800]],
+        "วันคั่นวันหยุด": [[6, 5000], [7, 7500], [8, 9500], [9, 8700], [10, 8000], [11, 7700], 
+                          [12, 8500], [13, 8300], [14, 7700], [15, 8000], [16, 9000], 
+                          [17, 10000], [18, 9500], [19, 8300], [20, 6500], [21, 4000], [22, 2500]]
+      },
+      hourly_adaptive: {
+        "Weekday": [[6, 78], [7, 81], [8, 86], [9, 84], [10, 83], [11, 82], [12, 83],
+                    [13, 82], [14, 81], [15, 82], [16, 84], [17, 86], [18, 85],
+                    [19, 83], [20, 81], [21, 76], [22, 71]],
+        "Weekend": [[6, 66], [7, 68], [8, 71], [9, 70], [10, 69], [11, 70], [12, 72],
+                    [13, 71], [14, 70], [15, 69], [16, 71], [17, 73], [18, 74],
+                    [19, 72], [20, 68], [21, 64], [22, 58]],
+        "วันคั่นวันหยุด": [[6, 74], [7, 76], [8, 81], [9, 80], [10, 79], [11, 78], [12, 79],
+                          [13, 78], [14, 77], [15, 78], [16, 80], [17, 82], [18, 81],
+                          [19, 79], [20, 76], [21, 72], [22, 66]]
+      }
+    },
+    "rama9": {
+      rank: 4,
+      name: "พระราม 9",
+      overall_delay: "105.1",
+      total_volume: "1680000",
+      avg_adaptive: "87",
+      hourly_delay: {
+        "Weekday": [[6, 82], [7, 107], [8, 132], [9, 117], [10, 102], [11, 97], [12, 112], 
+                    [13, 105], [14, 97], [15, 102], [16, 127], [17, 142], [18, 135], 
+                    [19, 117], [20, 92], [21, 72], [22, 52]],
+        "Weekend": [[6, 50], [7, 60], [8, 70], [9, 65], [10, 63], [11, 67], [12, 75],
+                    [13, 73], [14, 70], [15, 68], [16, 73], [17, 80], [18, 83],
+                    [19, 75], [20, 65], [21, 55], [22, 45]]
+      },
+      hourly_volume: {
+        "Weekday": [[6, 7500], [7, 11500], [8, 14500], [9, 13500], [10, 12500], [11, 12000], 
+                    [12, 12500], [13, 12300], [14, 11500], [15, 12000], [16, 13500], 
+                    [17, 15000], [18, 14500], [19, 12500], [20, 9500], [21, 6500], [22, 4500]],
+        "Weekend": [[6, 4000], [7, 5000], [8, 6000], [9, 5800], [10, 5500], [11, 5700], 
+                    [12, 6500], [13, 6200], [14, 5900], [15, 5800], [16, 6200], 
+                    [17, 7000], [18, 7200], [19, 6500], [20, 5500], [21, 4000], [22, 2500]],
+        "วันคั่นวันหยุด": [[6, 6500], [7, 9000], [8, 11000], [9, 10200], [10, 9500], [11, 9200], 
+                          [12, 10000], [13, 9800], [14, 9200], [15, 9500], [16, 10500], 
+                          [17, 11500], [18, 11000], [19, 9800], [20, 8000], [21, 5500], [22, 4000]]
+      },
+      hourly_adaptive: {
+        "Weekday": [[6, 84], [7, 87], [8, 92], [9, 90], [10, 89], [11, 88], [12, 89],
+                    [13, 88], [14, 87], [15, 88], [16, 90], [17, 92], [18, 91],
+                    [19, 89], [20, 87], [21, 82], [22, 77]],
+        "Weekend": [[6, 72], [7, 74], [8, 77], [9, 76], [10, 75], [11, 76], [12, 78],
+                    [13, 77], [14, 76], [15, 75], [16, 77], [17, 79], [18, 80],
+                    [19, 78], [20, 74], [21, 70], [22, 64]],
+        "วันคั่นวันหยุด": [[6, 80], [7, 82], [8, 87], [9, 86], [10, 85], [11, 84], [12, 85],
+                          [13, 84], [14, 83], [15, 84], [16, 86], [17, 88], [18, 87],
+                          [19, 85], [20, 82], [21, 78], [22, 72]]
+      }
+    },
+    "withayu": {
+      rank: 5,
+      name: "วิทยุ",
+      overall_delay: "102.0",
+      total_volume: "1575000",
+      avg_adaptive: "84",
+      hourly_delay: {
+        "Weekday": [[6, 78], [7, 103], [8, 128], [9, 113], [10, 98], [11, 93], [12, 108], 
+                    [13, 101], [14, 93], [15, 98], [16, 123], [17, 138], [18, 131], 
+                    [19, 113], [20, 88], [21, 68], [22, 48]],
+        "Weekend": [[6, 46], [7, 56], [8, 66], [9, 61], [10, 59], [11, 63], [12, 71],
+                    [13, 69], [14, 66], [15, 64], [16, 69], [17, 76], [18, 79],
+                    [19, 71], [20, 61], [21, 51], [22, 41]]
+      },
+      hourly_volume: {
+        "Weekday": [[6, 6800], [7, 10500], [8, 13500], [9, 12500], [10, 11500], [11, 11000], 
+                    [12, 11500], [13, 11300], [14, 10500], [15, 11000], [16, 12500], 
+                    [17, 14000], [18, 13500], [19, 11500], [20, 8500], [21, 5800], [22, 3800]],
+        "Weekend": [[6, 3800], [7, 4800], [8, 5800], [9, 5500], [10, 5200], [11, 5500], 
+                    [12, 6300], [13, 6000], [14, 5700], [15, 5500], [16, 6000], 
+                    [17, 6800], [18, 7000], [19, 6300], [20, 5200], [21, 3800], [22, 2300]],
+        "วันคั่นวันหยุด": [[6, 5800], [7, 8500], [8, 10500], [9, 9700], [10, 9000], [11, 8700], 
+                          [12, 9500], [13, 9300], [14, 8700], [15, 9000], [16, 10000], 
+                          [17, 11000], [18, 10500], [19, 9300], [20, 7500], [21, 5000], [22, 3500]]
+      },
+      hourly_adaptive: {
+        "Weekday": [[6, 80], [7, 83], [8, 88], [9, 86], [10, 85], [11, 84], [12, 85],
+                    [13, 84], [14, 83], [15, 84], [16, 86], [17, 88], [18, 87],
+                    [19, 85], [20, 83], [21, 78], [22, 73]],
+        "Weekend": [[6, 68], [7, 70], [8, 73], [9, 72], [10, 71], [11, 72], [12, 74],
+                    [13, 73], [14, 72], [15, 71], [16, 73], [17, 75], [18, 76],
+                    [19, 74], [20, 70], [21, 66], [22, 60]],
+        "วันคั่นวันหยุด": [[6, 76], [7, 78], [8, 83], [9, 82], [10, 81], [11, 80], [12, 81],
+                          [13, 80], [14, 79], [15, 80], [16, 82], [17, 84], [18, 83],
+                          [19, 81], [20, 78], [21, 74], [22, 68]]
+      }
+    }
+  };
+
+  // ===== TAB FUNCTIONALITY =====
+  document.querySelectorAll('.tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      // Remove active class from all tabs and panels
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.panel-content').forEach(p => p.classList.remove('active'));
+      
+      // Add active class to clicked tab and corresponding panel
+      tab.classList.add('active');
+      const tabName = tab.getAttribute('data-tab');
+      document.getElementById(`panel-${tabName}`).classList.add('active');
+      
+      // Render charts for this panel
+      setTimeout(() => {
+        if (tabName === 'overview') renderOverview();
+        else if (tabName === 'ranking') renderRanking();
+        else if (tabName === 'patterns') renderPatterns();
+        else if (tabName === 'drilldown') renderDrill(document.getElementById('junction-select').value);
+      }, 100);
+    });
   });
-  Plotly.newPlot('drill-delay', makeTraces('hourly_delay', 'Delay (sec/veh)'), layout('Delay × Hour × Day Category', 'Delay (sec/veh)'), {responsive:true});
-  Plotly.newPlot('drill-volume', makeTraces('hourly_volume', 'Volume'), layout('Volume × Hour × Day Category', 'Volume (veh/hr)'), {responsive:true});
-  Plotly.newPlot('drill-adaptive', makeTraces('hourly_adaptive', 'Adaptive (%)'), layout('Adaptive Activation × Hour × Day Category', 'Adaptive (%)'), {responsive:true});
-}
-document.getElementById('junction-select').onchange = (e) => renderDrill(e.target.value);
-renderDrill(document.getElementById('junction-select').value);
+
+  // ===== RENDER FUNCTIONS =====
+  function renderOverview() {
+    // Delay by Day Category
+    const overallByDay = {
+      "Weekday": 63.9,
+      "Weekend": 51.5,
+      "วันคั่นวันหยุด": 57.0,
+      "สงกรานต์": 44.6
+    };
+    
+    const delay_trace = {
+      x: Object.keys(overallByDay),
+      y: Object.values(overallByDay),
+      type: 'bar',
+      marker: { color: Object.keys(overallByDay).map(k => COLORS[k]) }
+    };
+    
+    Plotly.newPlot('overview-delay', [delay_trace], 
+      {title: 'ระยะเวลาหน่วงเฉลี่ยตามประเภทวัน', yaxis: {title: 'Delay (sec/veh)'}, ...defaultLayout},
+      {responsive: true});
+
+    // Volume by Day Category
+    const volumeByDay = {
+      "Weekday": 76500,
+      "Weekend": 48200,
+      "วันคั่นวันหยุด": 65000,
+      "สงกรานต์": 52000
+    };
+    
+    const volume_trace = {
+      x: Object.keys(volumeByDay),
+      y: Object.values(volumeByDay),
+      type: 'bar',
+      marker: { color: Object.keys(volumeByDay).map(k => COLORS[k]) }
+    };
+    
+    Plotly.newPlot('overview-volume', [volume_trace],
+      {title: 'ปริมาณการจราจรเฉลี่ยต่อวัน', yaxis: {title: 'Volume (vehicles)'}, ...defaultLayout},
+      {responsive: true});
+
+    // Adaptive Activation Rate
+    const adaptiveByDay = {
+      "Weekday": 87.2,
+      "Weekend": 82.0,
+      "วันคั่นวันหยุด": 85.5,
+      "สงกรานต์": 80.1
+    };
+    
+    const adaptive_trace = {
+      x: Object.keys(adaptiveByDay),
+      y: Object.values(adaptiveByDay),
+      type: 'bar',
+      marker: { color: Object.keys(adaptiveByDay).map(k => COLORS[k]) }
+    };
+    
+    Plotly.newPlot('overview-adaptive', [adaptive_trace],
+      {title: 'สัดส่วนการทำงานของระบบ Adaptive', yaxis: {title: 'Activation Rate (%)', range: [0, 100]}, ...defaultLayout},
+      {responsive: true});
+
+    // Comparison: Weekday vs Weekend
+    const comparison_data = [
+      {
+        x: ['Delay (sec/veh)', 'Volume (k vehicles)', 'Adaptive (%)'],
+        y: [63.9, 76.5, 87.2],
+        name: 'Weekday',
+        type: 'bar',
+        marker: { color: COLORS["Weekday"] }
+      },
+      {
+        x: ['Delay (sec/veh)', 'Volume (k vehicles)', 'Adaptive (%)'],
+        y: [51.5, 48.2, 82.0],
+        name: 'Weekend',
+        type: 'bar',
+        marker: { color: COLORS["Weekend"] }
+      }
+    ];
+    
+    Plotly.newPlot('overview-comparison', comparison_data,
+      {title: 'เปรียบเทียบวันทำการกับวันหยุด', barmode: 'group', ...defaultLayout},
+      {responsive: true});
+  }
+
+  function renderRanking() {
+    // Top 10 by Delay
+    const junctions = sampleJunctions.sort((a, b) => b.delay - a.delay).slice(0, 10);
+    
+    const delay_trace = {
+      x: junctions.map(j => j.delay),
+      y: junctions.map(j => j.name),
+      type: 'bar',
+      orientation: 'h',
+      marker: { color: pastelPalette.slice(0, junctions.length) }
+    };
+    
+    Plotly.newPlot('ranking-delay', [delay_trace],
+      {title: 'TOP 10 ทางแยกที่มีระยะเวลาหน่วงสูงสุด', xaxis: {title: 'Delay (sec/veh)'}, ...defaultLayout},
+      {responsive: true});
+
+    // Volume by Top Junctions
+    const volume_trace = {
+      x: junctions.map(j => j.name),
+      y: junctions.map(j => j.volume),
+      type: 'bar',
+      marker: { color: pastelPalette.slice(0, junctions.length) }
+    };
+    
+    Plotly.newPlot('ranking-volume', [volume_trace],
+      {title: 'ปริมาณการจราจร (TOP 10)', yaxis: {title: 'Volume (vehicles)'}, ...defaultLayout},
+      {responsive: true});
+
+    // Adaptive Rate by Top Junctions
+    const adaptive_trace = {
+      x: junctions.map(j => j.name),
+      y: junctions.map(j => j.adaptive),
+      type: 'bar',
+      marker: { color: pastelPalette.slice(0, junctions.length) }
+    };
+    
+    Plotly.newPlot('ranking-adaptive', [adaptive_trace],
+      {title: 'สัดส่วนการทำงาน Adaptive (TOP 10)', yaxis: {title: 'Activation Rate (%)', range: [0, 100]}, ...defaultLayout},
+      {responsive: true});
+  }
+
+  function renderPatterns() {
+    // Hourly Pattern for all junctions (averaged)
+    const hourlyData = {
+      "Weekday": {x: [], y: [], name: 'Weekday'},
+      "Weekend": {x: [], y: [], name: 'Weekend'},
+      "วันคั่นวันหยุด": {x: [], y: [], name: 'วันคั่นวันหยุด'}
+    };
+    
+    // Generate sample hourly data
+    for (let hour = 6; hour <= 22; hour++) {
+      let weekdayDelay = 70 + Math.sin((hour - 6) / 17 * Math.PI * 2) * 40 + Math.random() * 10;
+      let weekendDelay = 50 + Math.sin((hour - 6) / 17 * Math.PI * 2) * 15 + Math.random() * 5;
+      let transitionDelay = 60 + Math.sin((hour - 6) / 17 * Math.PI * 2) * 25 + Math.random() * 8;
+      
+      hourlyData["Weekday"].x.push(hour);
+      hourlyData["Weekday"].y.push(weekdayDelay);
+      
+      hourlyData["Weekend"].x.push(hour);
+      hourlyData["Weekend"].y.push(weekendDelay);
+      
+      hourlyData["วันคั่นวันหยุด"].x.push(hour);
+      hourlyData["วันคั่นวันหยุด"].y.push(transitionDelay);
+    }
+    
+    const traces = Object.keys(hourlyData).map(day => ({
+      x: hourlyData[day].x,
+      y: hourlyData[day].y,
+      name: day,
+      mode: 'lines+markers',
+      line: { color: COLORS[day], width: 2.5 },
+      marker: { size: 6 }
+    }));
+    
+    Plotly.newPlot('patterns-hourly-delay', traces,
+      {title: 'รูปแบบการจราจรรายชั่วโมง (เฉลี่ยทั้งระบบ)', 
+       xaxis: {title: 'Hour', tickmode: 'linear', dtick: 1},
+       yaxis: {title: 'Delay (sec/veh)'}, 
+       hovermode: 'x unified',
+       ...defaultLayout},
+      {responsive: true});
+
+    // Category Comparison
+    const categoryDelays = {
+      "Weekday": 63.9,
+      "Weekend": 51.5,
+      "วันคั่นวันหยุด": 57.0
+    };
+    
+    const catDelayTrace = {
+      x: Object.keys(categoryDelays),
+      y: Object.values(categoryDelays),
+      type: 'bar',
+      marker: { color: Object.keys(categoryDelays).map(k => COLORS[k]) }
+    };
+    
+    Plotly.newPlot('patterns-category-delay', [catDelayTrace],
+      {title: 'เปรียบเทียบระยะเวลาหน่วง', yaxis: {title: 'Delay (sec/veh)'}, ...defaultLayout},
+      {responsive: true});
+
+    // Category Volume Comparison
+    const categoryVolumes = {
+      "Weekday": 76500,
+      "Weekend": 48200,
+      "วันคั่นวันหยุด": 65000
+    };
+    
+    const catVolTrace = {
+      x: Object.keys(categoryVolumes),
+      y: Object.values(categoryVolumes),
+      type: 'bar',
+      marker: { color: Object.keys(categoryVolumes).map(k => COLORS[k]) }
+    };
+    
+    Plotly.newPlot('patterns-category-volume', [catVolTrace],
+      {title: 'เปรียบเทียบปริมาณการจราจร', yaxis: {title: 'Volume (vehicles)'}, ...defaultLayout},
+      {responsive: true});
+  }
+
+  function renderDrill(jid) {
+    const d = drillData[jid];
+    if (!d) return;
+    
+    // KPI Cards
+    document.getElementById('drill-kpis').innerHTML = `
+      <div class="kpi-card">
+        <div class="label">Junction Rank</div>
+        <div class="value">#${d.rank}</div>
+        <div class="sub">จาก 73 จุด</div>
+      </div>
+      <div class="kpi-card delay">
+        <div class="label">ระยะเวลาหน่วง</div>
+        <div class="value">${d.overall_delay}</div>
+        <div class="sub">sec/veh</div>
+      </div>
+      <div class="kpi-card volume">
+        <div class="label">ปริมาณรวม (3 สัปดาห์)</div>
+        <div class="value">${d.total_volume.toLocaleString()}</div>
+        <div class="sub">vehicles</div>
+      </div>
+      <div class="kpi-card adaptive">
+        <div class="label">การทำงาน Adaptive</div>
+        <div class="value">${d.avg_adaptive}%</div>
+        <div class="sub">activation</div>
+      </div>
+    `;
+    
+    // Helper function for making traces
+    function makeTraces(metric, ytitle) {
+      const cats = Object.keys(d[metric]);
+      return cats.map(c => ({
+        x: d[metric][c].map(v => v[0]),
+        y: d[metric][c].map(v => v[1]),
+        name: c,
+        mode: 'lines+markers',
+        line: { color: COLORS[c], width: 2.5 },
+        marker: { size: 7 }
+      }));
+    }
+    
+    const layout = (title, ytitle) => ({
+      title: title,
+      xaxis: { title: 'Hour', tickmode: 'linear', dtick: 1 },
+      yaxis: { title: ytitle },
+      height: 400,
+      hovermode: 'x unified',
+      ...defaultLayout
+    });
+    
+    // Plots
+    Plotly.newPlot('drill-delay', makeTraces('hourly_delay', 'Delay (sec/veh)'),
+      layout(`ระยะเวลาหน่วง - ${d.name}`, 'Delay (sec/veh)'),
+      {responsive: true});
+    
+    Plotly.newPlot('drill-volume', makeTraces('hourly_volume', 'Volume'),
+      layout(`ปริมาณการจราจร - ${d.name}`, 'Volume (veh/hr)'),
+      {responsive: true});
+    
+    Plotly.newPlot('drill-adaptive', makeTraces('hourly_adaptive', 'Adaptive (%)'),
+      layout(`การทำงาน Adaptive - ${d.name}`, 'Activation Rate (%)'),
+      {responsive: true});
+  }
+
+  // Event Listener for Junction Selection
+  document.getElementById('junction-select').addEventListener('change', (e) => {
+    renderDrill(e.target.value);
+  });
+
+  // Initialize first render
+  renderOverview();
 </script>
+
 </body>
 </html>
